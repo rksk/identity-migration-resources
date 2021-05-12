@@ -46,20 +46,21 @@ public class AuthorizationCodeDataTransformerV580 implements DataTransformer {
     public List<JournalEntry> transform(List<JournalEntry> journalEntryList, PipelineContext context)
             throws SyncClientException {
 
-        boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+        boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
+        boolean isTargetColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
         int idpId = getIdpId(journalEntryList, context, TABLE_IDN_OAUTH2_AUTHORIZATION_CODE);
 
         for (JournalEntry entry : journalEntryList) {
 
             String authorizationCode = getObjectValueFromEntry(entry, COLUMN_AUTHORIZATION_CODE,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String authorizationCodeHash = getObjectValueFromEntry(entry, COLUMN_AUTHORIZATION_CODE_HASH,
-                    isColumnNameInsLowerCase);
-            String userDomain = getObjectValueFromEntry(entry, COLUMN_USER_DOMAIN, isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
+            String userDomain = getObjectValueFromEntry(entry, COLUMN_USER_DOMAIN, isTargetColumnNameInsLowerCase);
 
             if (idpId != -1 && !StringUtils.equals(userDomain, FEDERATED)) {
                 updateJournalEntryForCode(entry, new AuthorizationCodeInfo(authorizationCode, authorizationCodeHash,
-                        idpId), isColumnNameInsLowerCase);
+                        idpId), isTargetColumnNameInsLowerCase);
             }
         }
 

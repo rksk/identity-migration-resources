@@ -46,16 +46,17 @@ public class AuthorizationCodeDataTransformerV5110 implements DataTransformer {
 
         try {
             boolean tokenEncryptionEnabled = OAuth2Util.isTokenEncryptionEnabled();
-            boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+            boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
+            boolean isTargetColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
             for (JournalEntry entry : journalEntryList) {
 
                 String authorizationCode = getObjectValueFromEntry(entry, COLUMN_AUTHORIZATION_CODE,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
                 AuthorizationCodeInfo authorizationCodeInfo = new AuthorizationCodeInfo(authorizationCode);
                 if (tokenEncryptionEnabled) {
                     EncryptionUtil.setCurrentEncryptionAlgorithm(oldEncryptionAlgorithm);
                     OAuth2Util.transformAuthzCodesFromOldToNewEncryption(authorizationCodeInfo);
-                    updateJournalEntryForCode(entry, authorizationCodeInfo, isColumnNameInsLowerCase);
+                    updateJournalEntryForCode(entry, authorizationCodeInfo, isTargetColumnNameInsLowerCase);
                 }
             }
         } catch (IdentityOAuth2Exception e) {

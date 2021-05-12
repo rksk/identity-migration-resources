@@ -50,14 +50,15 @@ public class AuthorizationCodeDataTransformerV550 implements DataTransformer {
         try {
             boolean encryptionWithTransformationEnabled = OAuth2Util.isEncryptionWithTransformationEnabled();
             boolean tokenEncryptionEnabled = OAuth2Util.isTokenEncryptionEnabled();
-            boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+            boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
+            boolean isTargetColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
 
             for (JournalEntry entry : journalEntryList) {
 
                 String authorizationCode = getObjectValueFromEntry(entry, COLUMN_AUTHORIZATION_CODE,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
                 String authorizationCodeHash = getObjectValueFromEntry(entry, COLUMN_AUTHORIZATION_CODE_HASH,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
 
                 AuthorizationCodeInfo authorizationCodeInfo = new AuthorizationCodeInfo(authorizationCode,
                         authorizationCodeHash);
@@ -68,14 +69,14 @@ public class AuthorizationCodeDataTransformerV550 implements DataTransformer {
                         if (StringUtils.isBlank(authorizationCodeHash)) {
                             hashAuthorizationCode(authorizationCodeInfo);
                         }
-                        updateJournalEntryForCode(entry, authorizationCodeInfo, isColumnNameInsLowerCase);
+                        updateJournalEntryForCode(entry, authorizationCodeInfo, isTargetColumnNameInsLowerCase);
                     } catch (CryptoException e) {
                         throw new SyncClientException("Error while transforming encrypted authorization codes", e);
                     }
                 } else if (!tokenEncryptionEnabled) {
                     if (StringUtils.isBlank(authorizationCodeHash)) {
                         hashAuthorizationCode(authorizationCodeInfo);
-                        updateJournalEntryForCode(entry, authorizationCodeInfo, isColumnNameInsLowerCase);
+                        updateJournalEntryForCode(entry, authorizationCodeInfo, isTargetColumnNameInsLowerCase);
                     }
                 }
             }

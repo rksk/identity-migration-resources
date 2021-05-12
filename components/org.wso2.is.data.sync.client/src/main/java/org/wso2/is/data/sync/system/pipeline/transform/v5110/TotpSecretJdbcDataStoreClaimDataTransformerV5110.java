@@ -55,23 +55,24 @@ public class TotpSecretJdbcDataStoreClaimDataTransformerV5110 implements DataTra
         String secretKeyIdentityClaim = "http://wso2.org/claims/identity/secretkey";
         String verifiedSecretKeyIdentityClaim = "http://wso2.org/claims/identity/verifySecretkey";
 
-        boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+        boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
+        boolean isTargetColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
         for (JournalEntry entry : journalEntryList) {
             String secretKey = getObjectValueFromEntry(entry, COLUMN_DATA_VALUE,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String tenant = getObjectValueFromEntry(entry, COLUMN_TENANT_ID,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String userName = getObjectValueFromEntry(entry, COLUMN_USER_NAME,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String datakey = getObjectValueFromEntry(entry, COLUMN_DATA_KEY,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
 
             if (secretKeyIdentityClaim.equals(secretKey) || verifiedSecretKeyIdentityClaim.equals(secretKey)) {
                 TotpSecretDataInfo totpSecretDataInfo = new TotpSecretDataInfo(tenant, userName, secretKey, datakey);
                 EncryptionUtil.setCurrentEncryptionAlgorithm(oldEncryptionAlgorithm);
 
                 OAuth2Util.transformTotpSecretsFromOldToNewEncryption(totpSecretDataInfo);
-                updateJournalEntryForTotp(entry, totpSecretDataInfo, isColumnNameInsLowerCase);
+                updateJournalEntryForTotp(entry, totpSecretDataInfo, isTargetColumnNameInsLowerCase);
             }
 
         }

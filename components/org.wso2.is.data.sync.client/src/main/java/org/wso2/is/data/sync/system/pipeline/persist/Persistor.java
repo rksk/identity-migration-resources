@@ -33,9 +33,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 import static org.wso2.is.data.sync.system.database.SQLQueryProvider.SQL_TEMPLATE_DELETE_TARGET_SYNC_ENTRY_KEY;
 import static org.wso2.is.data.sync.system.database.SQLQueryProvider.SQL_TEMPLATE_INSERT_TARGET_SYNC_ENTRY_KEY;
@@ -151,6 +150,7 @@ public class Persistor {
                 }
             }
         } catch (SQLException e) {
+            log.error("Error while obtaining sync data from of target table.", e);;
             throw new SyncClientException("Error while obtaining sync data from of target table.", e);
         }
         return transactionResults;
@@ -195,6 +195,16 @@ public class Persistor {
         List<String> primaryKeys = metaData.getPrimaryKeys();
         for (int i = 0; i < primaryKeys.size(); i++) {
             EntryField<?> entryField = fields.get(primaryKeys.get(i));
+            if (entryField == null) {
+                entryField = fields.get(primaryKeys.get(i).toUpperCase());
+            }
+            if (entryField == null) {
+                entryField = fields.get(primaryKeys.get(i).toLowerCase());
+            }
+            if (entryField == null) {
+                log.error("Unable to get entryField for key: " + primaryKeys.get(i) + " from fields: " + fields);
+                break;
+            }
             ps.setObject(i + 1, entryField.getValue());
         }
     }
@@ -205,11 +215,25 @@ public class Persistor {
         List<ColumnData> columnDataList = metaData.getColumnDataList();
         for (int i = 0; i < columnDataList.size(); i++) {
             EntryField<?> entryField = fields.get(columnDataList.get(i).getName());
+            if (entryField == null) {
+                entryField = fields.get(columnDataList.get(i).getName().toUpperCase());
+            }
+            if (entryField == null) {
+                entryField = fields.get(columnDataList.get(i).getName().toLowerCase());
+            }
             Object value = null;
             if (entryField != null) {
                 value = entryField.getValue();
             }
-            psTargetInsert.setObject(i + 1, value);
+
+            String col = columnDataList.get(i).getName().toUpperCase();
+
+            // This is to convert timestamps from 2015-09-01 16:34:02.652 format to 2015-09-01T16:34:02
+            if (col.equals("TIME_CREATED") || col.equals("REFRESH_TOKEN_TIME_CREATED")) {
+                psTargetInsert.setObject(i + 1, Timestamp.valueOf(value.toString()));
+            } else {
+                psTargetInsert.setObject(i + 1, value);
+            }
         }
     }
 

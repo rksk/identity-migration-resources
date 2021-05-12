@@ -48,24 +48,25 @@ public class OAuthTokenDataTransformerV580 implements DataTransformer {
     public List<JournalEntry> transform(List<JournalEntry> journalEntryList, PipelineContext context)
             throws SyncClientException {
 
-        boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+        boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
+        boolean isTargetColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
         int idpId = getIdpId(journalEntryList, context, TABLE_IDN_OAUTH2_ACCESS_TOKEN);
 
         for (JournalEntry entry : journalEntryList) {
 
             String accessToken = getObjectValueFromEntry(entry, COLUMN_ACCESS_TOKEN,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String refreshToken = getObjectValueFromEntry(entry, COLUMN_REFRESH_TOKEN,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String accessTokenHash = getObjectValueFromEntry(entry, COLUMN_ACCESS_TOKEN_HASH,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String refreshTokenHash = getObjectValueFromEntry(entry, COLUMN_REFRESH_TOKEN_HASH,
-                    isColumnNameInsLowerCase);
-            String userDomain = getObjectValueFromEntry(entry, COLUMN_USER_DOMAIN, isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
+            String userDomain = getObjectValueFromEntry(entry, COLUMN_USER_DOMAIN, isSourceColumnNameInsLowerCase);
 
             if (idpId != -1 && !StringUtils.equals(userDomain, FEDERATED)) {
                 updateJournalEntryForToken(entry, new TokenInfo(accessToken, refreshToken, accessTokenHash,
-                        refreshTokenHash, idpId), isColumnNameInsLowerCase);
+                        refreshTokenHash, idpId), isTargetColumnNameInsLowerCase);
             }
         }
 

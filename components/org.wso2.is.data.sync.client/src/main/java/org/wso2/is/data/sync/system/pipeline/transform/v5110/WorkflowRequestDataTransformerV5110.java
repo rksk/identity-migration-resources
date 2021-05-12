@@ -49,13 +49,13 @@ public class WorkflowRequestDataTransformerV5110 implements DataTransformer {
     public List<JournalEntry> transform(List<JournalEntry> journalEntryList, PipelineContext context)
             throws SyncClientException {
 
-        boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+        boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
         for (JournalEntry entry : journalEntryList) {
 
             byte[] workFlowRequest = getObjectValueFromEntry(entry, COLUMN_REQUEST,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             String workFlowUuid = getObjectValueFromEntry(entry, COLUMN_UUID,
-                    isColumnNameInsLowerCase);
+                    isSourceColumnNameInsLowerCase);
             WorkflowRequest workflowRequest = deserializeWorkflowRequest(workFlowRequest);
             EncryptionUtil.setCurrentEncryptionAlgorithm(oldEncryptionAlgorithm);
             WorkFlowUtil.transformWorkFlowCredentialsFromOldToNewEncryption(workflowRequest);

@@ -56,18 +56,19 @@ public class OAuthTokenDataTransformerV550 implements DataTransformer {
         try {
             boolean encryptionWithTransformationEnabled = OAuth2Util.isEncryptionWithTransformationEnabled();
             boolean tokenEncryptionEnabled = OAuth2Util.isTokenEncryptionEnabled();
-            boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+            boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
+            boolean isTargetColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
 
             for (JournalEntry entry : journalEntryList) {
 
                 String accessToken = getObjectValueFromEntry(entry, COLUMN_ACCESS_TOKEN,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
                 String refreshToken = getObjectValueFromEntry(entry, COLUMN_REFRESH_TOKEN,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
                 String accessTokenHash = getObjectValueFromEntry(entry, COLUMN_ACCESS_TOKEN_HASH,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
                 String refreshTokenHash = getObjectValueFromEntry(entry, COLUMN_REFRESH_TOKEN_HASH,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
 
                 TokenInfo tokenInfo = new TokenInfo(accessToken, refreshToken, accessTokenHash, refreshTokenHash);
 
@@ -77,14 +78,14 @@ public class OAuthTokenDataTransformerV550 implements DataTransformer {
                         if (StringUtils.isBlank(accessTokenHash)) {
                             hashTokens(tokenInfo);
                         }
-                        updateJournalEntryForToken(entry, tokenInfo, isColumnNameInsLowerCase);
+                        updateJournalEntryForToken(entry, tokenInfo, isTargetColumnNameInsLowerCase);
                     } catch (CryptoException e) {
                         throw new SyncClientException("Error while transforming encrypted tokens", e);
                     }
                 } else if (!tokenEncryptionEnabled) {
                     if (StringUtils.isBlank(accessTokenHash)) {
                         hashTokens(tokenInfo);
-                        updateJournalEntryForToken(entry, tokenInfo, isColumnNameInsLowerCase);
+                        updateJournalEntryForToken(entry, tokenInfo, isTargetColumnNameInsLowerCase);
                     }
                 }
             }

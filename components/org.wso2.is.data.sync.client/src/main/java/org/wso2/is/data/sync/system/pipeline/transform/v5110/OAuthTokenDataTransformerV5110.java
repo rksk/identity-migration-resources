@@ -52,18 +52,19 @@ public class OAuthTokenDataTransformerV5110 implements DataTransformer {
 
         try {
             boolean tokenEncryptionEnabled = OAuth2Util.isTokenEncryptionEnabled();
-            boolean isColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
+            boolean isSourceColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getSourceConnection());
+            boolean isTargetColumnNameInsLowerCase = isIdentifierNamesMaintainedInLowerCase(context.getTargetConnection());
             for (JournalEntry entry : journalEntryList) {
                 String accessToken = getObjectValueFromEntry(entry, COLUMN_ACCESS_TOKEN,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
                 String refreshToken = getObjectValueFromEntry(entry, COLUMN_REFRESH_TOKEN,
-                        isColumnNameInsLowerCase);
+                        isSourceColumnNameInsLowerCase);
                 TokenInfo tokenInfo = new TokenInfo(accessToken, refreshToken);
                 if (tokenEncryptionEnabled) {
                     EncryptionUtil.setCurrentEncryptionAlgorithm(oldEncryptionAlgorithm);
                     OAuth2Util.transformTokensFromOldToNewEncryption(tokenInfo);
                 }
-                updateJournalEntryForToken(entry, tokenInfo, isColumnNameInsLowerCase);
+                updateJournalEntryForToken(entry, tokenInfo, isTargetColumnNameInsLowerCase);
             }
 
         } catch (IdentityOAuth2Exception e) {
